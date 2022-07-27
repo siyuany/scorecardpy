@@ -158,26 +158,46 @@ def check_print_step(print_step):
     return print_step
 
 
-def x_variable(dat, y, x, var_skip=None):
-    y = str_to_list(y)
+def x_variable(df, y=None, x=None, var_skip=None):
+    """
+    根据数据集、y变量、x变量及排除变量 (var_skip) 生成X变量列表
+
+    - 20220727: 接口变更，入参y及x由位置参数改为关键字参数，支持默认不传入
+
+    Parameters
+    ----------
+    df: pd.DataFrame 数据集
+    y: （可选）Y变量名称，可以为空
+    x: （可选）X变量名称列表，可以为空，默认选择df中所有列
+    var_skip: （可选）需要排除的列名列表
+
+    Returns
+    -------
+    list, X变量名列表
+    """
+    if y is None:
+        excluded_cols = []
+    else:
+        excluded_cols = str_to_list(y)
     if var_skip is not None:
-        y = y + str_to_list(var_skip)
-    x_all = list(set(dat.columns) - set(y))
+        excluded_cols = excluded_cols + str_to_list(var_skip)
+    x_all = list(set(df.columns.tolist()) - set(excluded_cols))
 
     if x is None:
         x = x_all
     else:
         x = str_to_list(x)
 
-        if any([i in list(x_all) for i in x]) is False:
+        # if any([i in list(x_all) for i in x]) is False:
+        if not set(x).intersection(x_all):
             x = x_all
         else:
-            x_notin_xall = set(x).difference(x_all)
-            if len(x_notin_xall) > 0:
+            x_not_in_x_all = set(x).difference(x_all)
+            if len(x_not_in_x_all) > 0:
                 warnings.warn(
-                    "Incorrect inputs; there are {} x variables are not exist "
+                    "Incorrect inputs; there are {} variables are not exist "
                     "in input data, which are removed from x. \n({})".format(
-                        len(x_notin_xall), ', '.join(x_notin_xall)))
+                        len(x_not_in_x_all), ', '.join(x_not_in_x_all)))
                 x = set(x).intersection(x_all)
 
     return list(x)
