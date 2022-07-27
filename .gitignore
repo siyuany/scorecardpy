@@ -9,3 +9,5 @@
 .Rproj.user
 .Rhistory
 *.Rproj
+.idea/
+.DS_Store
